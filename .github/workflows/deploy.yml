@@ -40,7 +40,18 @@ jobs:
           node-version: 22.12.0
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --reporter=append-only
+        shell: bash
+        run: |
+          set +e
+          output="$(pnpm install --frozen-lockfile --reporter=append-only 2>&1)"
+          status=$?
+          printf '%s\n' "$output"
+          if (( status != 0 )); then
+            message="$(printf '%s\n' "$output" | tail -n 15 | tr '\n' ' ')"
+            message="${message//'%'/'%25'}"
+            printf '::error title=pnpm install failed::%s\n' "$message"
+            exit "$status"
+          fi
 
       - name: Build site
         run: pnpm run site:build
