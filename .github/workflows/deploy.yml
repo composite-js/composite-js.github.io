@@ -37,21 +37,11 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          node-version: 22.12.0
+          node-version: 22.19.0
+          cache: pnpm
 
       - name: Install dependencies
-        shell: bash
-        run: |
-          set +e
-          output="$(pnpm install --frozen-lockfile --reporter=append-only 2>&1)"
-          status=$?
-          printf '%s\n' "$output"
-          if (( status != 0 )); then
-            message="$(printf '%s\n' "$output" | tail -n 15 | tr '\n' ' ')"
-            message="${message//'%'/'%25'}"
-            printf '::error title=pnpm install failed::%s\n' "$message"
-            exit "$status"
-          fi
+        run: pnpm install --frozen-lockfile
 
       - name: Build site
         run: pnpm run site:build
